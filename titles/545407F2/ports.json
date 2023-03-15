@@ -1,0 +1,9 @@
+{
+  "bind": [
+      {
+          "info": "Player port 1.",
+          "port": 1000,
+          "mappedTo": 36002
+      }
+  ]
+}

@@ -3,7 +3,6 @@ import {
   Get,
   Header,
   Inject,
-  NotFoundException,
   Param,
   Res,
   StreamableFile,
@@ -11,7 +10,7 @@ import {
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import { join } from 'path';
+import path from 'path';
 import { Response } from 'express';
 import { stat } from 'fs/promises';
 import { createReadStream, existsSync } from 'fs';
@@ -32,19 +31,18 @@ export class TitleController {
     @Param('titleId') titleId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const path = join(
-      process.cwd(),
+    const serversPath = path.join(
       'titles',
       titleId.toUpperCase(),
       'servers.json',
     );
 
-    if (!existsSync(path)) return [];
+    if (!existsSync(serversPath)) return [];
 
-    const stats = await stat(path);
+    const stats = await stat(serversPath);
 
     res.set('Content-Length', stats.size.toString());
-    return new StreamableFile(createReadStream(path));
+    return new StreamableFile(createReadStream(serversPath));
   }
 
   @Get('/ports')
@@ -54,18 +52,24 @@ export class TitleController {
     @Param('titleId') titleId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const path = join(
-      process.cwd(),
-      'titles',
-      titleId.toUpperCase(),
-      'ports.json',
-    );
+    const portsPath = path.join('titles', titleId.toUpperCase(), 'ports.json');
 
-    if (!existsSync(path)) return {};
+    if (!existsSync(portsPath)) {
+      return {
+        // Dirty way of adding support for games that want port 1000. Should help support a lot of games.
+        bind: [
+          {
+            info: 'Default binding.',
+            port: 1000,
+            mappedTo: 36001,
+          },
+        ],
+      };
+    }
 
-    const stats = await stat(path);
+    const stats = await stat(portsPath);
 
     res.set('Content-Length', stats.size.toString());
-    return new StreamableFile(createReadStream(path));
+    return new StreamableFile(createReadStream(portsPath));
   }
 }
