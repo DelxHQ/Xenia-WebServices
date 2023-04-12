@@ -1,0 +1,9 @@
+{
+  "bind": [
+    {
+      "info": "Default binding.",
+      "port": 1000,
+      "mappedTo": 36001
+    }
+  ]
+}

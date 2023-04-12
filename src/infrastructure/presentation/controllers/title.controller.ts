@@ -55,16 +55,12 @@ export class TitleController {
     const portsPath = path.join('titles', titleId.toUpperCase(), 'ports.json');
 
     if (!existsSync(portsPath)) {
-      return {
-        // Dirty way of adding support for games that want port 1000. Should help support a lot of games.
-        bind: [
-          {
-            info: 'Default binding.',
-            port: 1000,
-            mappedTo: 36001,
-          },
-        ],
-      };
+      // Dirty way of adding support for games that want port 1000. Should help support a lot of games.
+      const defaultPortsPath = path.join('titles', 'defaultPorts.json');
+      const stats = await stat(defaultPortsPath);
+
+      res.set('Content-Length', stats.size.toString());
+      return new StreamableFile(createReadStream(defaultPortsPath));
     }
 
     const stats = await stat(portsPath);
